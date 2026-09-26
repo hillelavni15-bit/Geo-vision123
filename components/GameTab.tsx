@@ -26,6 +26,7 @@ export default function GameTab() {
   const [error, setError] = useState<string | null>(null);
 
   const start = (gameRounds: GameRound[]) => {
+    rounds.forEach((r) => r.imageUrl.startsWith("blob:") && URL.revokeObjectURL(r.imageUrl));
     if (gameRounds.length === 0) {
       setError("לא הצלחנו להכין סבב משחק. נסו שוב.");
       setPhase("menu");
@@ -59,6 +60,15 @@ export default function GameTab() {
       return;
     }
     start(pickRandom(withGps, ROUNDS_PER_GAME));
+  };
+
+  // A round whose photo can't be loaded is dropped rather than played blind.
+  const skipBrokenRound = () => {
+    const remaining = rounds.filter((_, i) => i !== index);
+    setRounds(remaining);
+    setGuess(null);
+    if (index >= remaining.length) setPhase(remaining.length && results.length ? "finished" : "menu");
+    if (remaining.length === 0) setError("לא הצלחנו לטעון את התמונות. נסו שוב.");
   };
 
   const submit = () => {
@@ -146,7 +156,7 @@ export default function GameTab() {
       </div>
       <div className="split">
         <div className="side">
-          <img className="photo game-photo" src={round.imageUrl} alt="איפה זה?" referrerPolicy="no-referrer" />
+          <img className="photo game-photo" src={round.imageUrl} alt="איפה זה?" referrerPolicy="no-referrer" onError={skipBrokenRound} />
           {phase === "guessing" ? (
             <button className="big" disabled={!guess} onClick={submit}>
               {guess ? "נחשו!" : "לחצו על המפה כדי לנחש"}

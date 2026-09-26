@@ -63,10 +63,26 @@ interface WikiSummary {
   content_urls?: { desktop?: { page?: string } };
 }
 
+const DISPLAY_WIDTH = 1280;
+const BROWSER_FORMATS = /\.(jpe?g|png|gif|webp)$/i;
+
+/**
+ * Choose a photo URL that is large enough to play with but not a multi-MB original.
+ * Wikimedia can't upscale, so a 1280px thumbnail is requested only when the original is wider.
+ */
+function pickImage(s: WikiSummary): string | undefined {
+  const original = s.originalimage;
+  const thumb = s.thumbnail?.source;
+  if (original && thumb && original.width > DISPLAY_WIDTH && /\/\d+px-/.test(thumb)) {
+    return thumb.replace(/\/\d+px-/, `/${DISPLAY_WIDTH}px-`);
+  }
+  if (original && BROWSER_FORMATS.test(original.source)) return original.source;
+  return thumb;
+}
+
 export function roundFromWikiSummary(s: WikiSummary): GameRound | null {
   const answer = s.coordinates ? { lat: s.coordinates.lat, lon: s.coordinates.lon } : null;
-  // Prefer a large thumbnail over the original (originals can be 20+ MB).
-  const image = s.thumbnail?.source?.replace(/\/\d+px-/, "/1280px-") ?? s.originalimage?.source;
+  const image = pickImage(s);
   if (!isValidLatLon(answer) || !image || !s.title) return null;
   return {
     imageUrl: image,

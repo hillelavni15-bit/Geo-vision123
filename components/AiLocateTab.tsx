@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Map from "./Map";
 import PhotoPicker from "./PhotoPicker";
 import { readPhotoMetadata } from "@/lib/exif";
@@ -21,14 +21,24 @@ export default function AiLocateTab() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [runId, setRunId] = useState(0);
+  const latest = useRef(0);
 
   const analyse = async ([file]: File[]) => {
+    const request = ++latest.current;
+    const isCurrent = () => request === latest.current;
     setError(null);
     setGuess(null);
     setActual(null);
+    setPreview(null);
     setLoading(true);
     try {
-      const [image, meta] = await Promise.all([prepareImage(file), readPhotoMetadata(file)]);
+      const [image, meta] = await Promise.all([
+        prepareImage(file).catch(() => {
+          throw new Error("לא ניתן לקרוא את התמונה. ייתכן שהפורמט (למשל HEIC) לא נתמך בדפדפן. נסו JPEG או PNG.");
+        }),
+        readPhotoMetadata(file),
+      ]);
+      if (!isCurrent()) return;
       setPreview(image.previewUrl);
       setActual(meta.location);
       const res = await fetch("/api/locate", {
@@ -36,14 +46,16 @@ export default function AiLocateTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: image.data, mediaType: image.mediaType }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({ error: `שגיאת שרת (${res.status})` }));
+      if (!isCurrent()) return;
       if (!res.ok) throw new Error(json.error ?? "שגיאה לא צפויה");
       setGuess(json.guess);
       setRunId((n) => n + 1);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      if (!isCurrent()) return;
+      setError(e instanceof TypeError ? "אין חיבור לשרת. בדקו את החיבור לאינטרנט." : e instanceof Error ? e.message : String(e));
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 

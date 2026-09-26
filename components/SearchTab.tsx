@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Map from "./Map";
 import { formatCoords, googleMapsUrl, type LatLon } from "@/lib/geo";
 import { reverseGeocode, searchPlaces, type Place } from "@/lib/places";
@@ -9,7 +9,9 @@ export default function SearchTab() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Place[]>([]);
   const [selected, setSelected] = useState<Place | null>(null);
-  const [pin, setPin] = useState<{ location: LatLon; address: string | null; label: string } | null>(null);
+  // address: undefined while loading, null when no address was found
+  const [pin, setPin] = useState<{ location: LatLon; address?: string | null; label: string } | null>(null);
+  const latestSearch = useRef(0);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fitKey, setFitKey] = useState(0);
@@ -18,21 +20,26 @@ export default function SearchTab() {
     e.preventDefault();
     setError(null);
     setStatus("מחפש…");
+    const request = ++latestSearch.current;
     try {
       const found = await searchPlaces(query);
+      if (request !== latestSearch.current) return;
       setResults(found);
       setSelected(found[0] ?? null);
       setPin(null);
       setStatus(found.length ? null : "לא נמצאו תוצאות");
       setFitKey((k) => k + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (request !== latestSearch.current) return;
+      setResults([]);
+      setSelected(null);
+      setError(err instanceof TypeError ? "אין חיבור לשירות החיפוש. נסו שוב." : err instanceof Error ? err.message : String(err));
       setStatus(null);
     }
   };
 
   const dropPin = async (location: LatLon, label: string) => {
-    setPin({ location, address: null, label });
+    setPin({ location, address: undefined, label });
     setFitKey((k) => k + 1);
     const address = await reverseGeocode(location).catch(() => null);
     setPin((p) => (p && p.location === location ? { ...p, address } : p));
@@ -85,7 +92,7 @@ export default function SearchTab() {
             <div className="card">
               <h3>{pin.label}</h3>
               <div className="mono">{formatCoords(pin.location)}</div>
-              <p>{pin.address ?? "מאתר כתובת…"}</p>
+              <p>{pin.address === undefined ? "מאתר כתובת…" : (pin.address ?? "לא נמצאה כתובת לנקודה הזו")}</p>
               <a href={googleMapsUrl(pin.location)} target="_blank" rel="noreferrer">
                 פתיחה ב-Google Maps ↗
               </a>

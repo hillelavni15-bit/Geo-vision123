@@ -85,7 +85,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "יותר מדי בקשות. נסו שוב בעוד רגע." }, { status: 429 });
     }
     if (err instanceof Anthropic.BadRequestError) {
-      return NextResponse.json({ error: `הבקשה נדחתה: ${err.message}` }, { status: 400 });
+      console.error("locate rejected", err.message);
+      return NextResponse.json({ error: "שירות ה-AI דחה את הבקשה. נסו תמונה אחרת." }, { status: 400 });
     }
     if (err instanceof Anthropic.APIError) {
       return NextResponse.json({ error: "שירות ה-AI אינו זמין כרגע." }, { status: 502 });

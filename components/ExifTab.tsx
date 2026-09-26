@@ -73,7 +73,13 @@ export default function ExifTab() {
             {photos.map((p) => (
               <li key={p.id}>
                 <button className={p.id === selected ? "active" : ""} onClick={() => select(p)}>
-                  <img src={p.url} alt="" />
+                  <img
+                    src={p.url}
+                    alt=""
+                    onError={(e) => {
+                      e.currentTarget.style.visibility = "hidden";
+                    }}
+                  />
                   <span>
                     <strong>{p.name}</strong>
                     <small>{p.meta.location ? formatCoords(p.meta.location) : "אין נתוני GPS"}</small>

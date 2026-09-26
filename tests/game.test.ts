@@ -42,14 +42,35 @@ describe("pickRandom", () => {
 });
 
 describe("roundFromWikiSummary", () => {
-  it("builds a round and upsizes the thumbnail", () => {
+  const base = { title: "Masada", coordinates: { lat: 31.3156, lon: 35.3536 } };
+  const thumb = { source: "https://upload.wikimedia.org/thumb/a/b/Masada.jpg/330px-Masada.jpg" };
+
+  it("requests a 1280px thumbnail when the original is larger", () => {
     const round = roundFromWikiSummary({
-      title: "Masada",
-      coordinates: { lat: 31.3156, lon: 35.3536 },
-      thumbnail: { source: "https://upload.wikimedia.org/a/b/320px-Masada.jpg" },
+      ...base,
+      thumbnail: thumb,
+      originalimage: { source: "https://upload.wikimedia.org/a/b/Masada.jpg", width: 4000, height: 3000 },
     });
-    expect(round?.imageUrl).toBe("https://upload.wikimedia.org/a/b/1280px-Masada.jpg");
+    expect(round?.imageUrl).toBe("https://upload.wikimedia.org/thumb/a/b/Masada.jpg/1280px-Masada.jpg");
     expect(round?.answer).toEqual({ lat: 31.3156, lon: 35.3536 });
+  });
+
+  it("never asks Wikimedia to upscale a small original", () => {
+    const round = roundFromWikiSummary({
+      ...base,
+      thumbnail: thumb,
+      originalimage: { source: "https://upload.wikimedia.org/a/b/Masada.jpg", width: 800, height: 600 },
+    });
+    expect(round?.imageUrl).toBe("https://upload.wikimedia.org/a/b/Masada.jpg");
+  });
+
+  it("falls back to the thumbnail for originals browsers can't show", () => {
+    const round = roundFromWikiSummary({
+      ...base,
+      thumbnail: thumb,
+      originalimage: { source: "https://upload.wikimedia.org/a/b/Masada.tif", width: 900, height: 600 },
+    });
+    expect(round?.imageUrl).toBe(thumb.source);
   });
 
   it("skips pages without coordinates or images", () => {
