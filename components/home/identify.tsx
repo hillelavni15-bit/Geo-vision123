@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AlertTriangle, ArrowRight, Camera, Crosshair, Sparkles, UploadCloud } from "lucide-react";
-import { toast } from "sonner";
 import { HeroGlobe } from "@/components/hero-globe";
 import { useMe } from "@/components/me-provider";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,7 @@ export function Identify({
   restore: HistoryItem | null;
   onAnalyzed: () => void;
 }) {
-  const { me, setCredits } = useMe();
+  const { setCredits, paysForSearches, confirmSearch } = useMe();
   const [prepared, setPrepared] = useState<PreparedImage | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -106,14 +105,7 @@ export function Identify({
 
   const analyze = async () => {
     if (!prepared || analyzing) return;
-    const paying = me && !me.unlimited && !me.isPro;
-    if (paying) {
-      if (me.credits < SEARCH_COST) {
-        toast.error(`You need ${SEARCH_COST} coins for this search. Play a round to earn more.`);
-        return;
-      }
-      if (!window.confirm(`Run this AI search for ${SEARCH_COST} coins? Coins are charged only if the search succeeds.`)) return;
-    }
+    if (!confirmSearch()) return;
 
     const id = ++requestId.current;
     const controller = new AbortController();
@@ -244,7 +236,7 @@ export function Identify({
           >
             {analyzing
               ? "Analyzing…"
-              : me && !me.unlimited && !me.isPro
+              : paysForSearches
                 ? `Run Analysis · ${SEARCH_COST} coins`
                 : "Run Analysis"}
             {!analyzing && <ArrowRight className="!size-5" />}

@@ -40,6 +40,79 @@ export interface Me {
 
 export const SEARCH_COST = 20;
 
+export interface WebImage {
+  title: string;
+  thumbUrl: string;
+  /** The Commons page with full size and licence details. */
+  pageUrl: string;
+  description: string;
+  attribution: string;
+}
+
+export interface DiscoverPlace {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  description: string;
+  matchScore: number;
+  placeType: string;
+  moodTags: string[];
+  distanceKm: number;
+  /** Photo URL, only sent to Pro members. */
+  imageUrl: string | null;
+  /** True when a photo exists but is reserved for Pro. */
+  photoLocked: boolean;
+}
+
+export interface DiscoverResult {
+  locationName: string;
+  centerLat: number;
+  centerLng: number;
+  places: DiscoverPlace[];
+}
+
+export interface CompareSide {
+  description: string;
+  landmarks: string[];
+}
+
+export interface CompareResult {
+  verdict: "same" | "likely-same" | "different" | "uncertain";
+  matchScore: number;
+  confidence: Confidence;
+  reasoning: string;
+  photoA: CompareSide;
+  photoB: CompareSide;
+  sharedFeatures: string[];
+  differences: string[];
+}
+
+export interface VisualProfile {
+  sceneType: string;
+  timeOfDay: string;
+  season: string;
+  dominantColors: string[];
+  elements: string[];
+  architecturalStyle: string | null;
+  atmosphere: string;
+}
+
+export interface SimilarPhoto {
+  analysisId: string;
+  place: string;
+  thumbnailDataUrl: string;
+  similarityPct: number;
+}
+
+export interface VisualMatches {
+  /** False while the visual profile is still being extracted. */
+  ready: boolean;
+  profile: VisualProfile | null;
+  similar: SimilarPhoto[];
+}
+
 export function placeLabel(m: Pick<LocationMatch, "city" | "region" | "country">): string {
   return [m.city, m.region, m.country].filter(Boolean).join(", ");
 }

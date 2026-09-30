@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { analyzePhoto } from "@/lib/server/analysis";
 import { getGuestId } from "@/lib/server/guest";
 import { aiErrorResponse, jsonError } from "@/lib/server/http";
 import { canAfford, charge } from "@/lib/server/users";
+import { extractVisualProfile, profileVector } from "@/lib/server/visual";
 import { SEARCH_COST } from "@/lib/types";
 
 export const maxDuration = 90;
@@ -64,6 +65,21 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error("saving analysis failed", err);
+  }
+
+  // After responding, describe the photo's look so similar photos can be found later.
+  if (result.status === "identified") {
+    after(async () => {
+      try {
+        const profile = await extractVisualProfile(imageBase64);
+        await db
+          .insert(schema.imageFeatures)
+          .values({ analysisId: id, userId, profile, vector: profileVector(profile) })
+          .onConflictDoNothing();
+      } catch (err) {
+        console.warn("visual profile failed", err);
+      }
+    });
   }
 
   return NextResponse.json({ result, credits });

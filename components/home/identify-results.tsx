@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { placeLabel, type AnalysisResult } from "@/lib/types";
 import { clueClass, confidenceClass } from "./styles";
+import { VisualMatches } from "./visual-matches";
 
 const LocationMap = dynamic(() => import("@/components/location-map"), {
   ssr: false,
@@ -217,6 +218,8 @@ export function IdentifyResults({
           </div>
         </div>
       )}
+
+      <VisualMatches analysisId={result.id} location={[primary.city, primary.country].filter(Boolean).join(", ")} />
     </div>
   );
 }

@@ -7,8 +7,8 @@ This is a new implementation of the app, built with Next.js, PostgreSQL and the 
 | Stage | What | Status |
 |---|---|---|
 | 1 | Design, navigation, Identify Photo, history, coins | Done |
-| 2 | Discover Places, Compare | Next |
-| 3 | Play, Daily challenge, Leaderboard, Profile | Planned |
+| 2 | Discover Places, Compare, Image Intelligence | Done |
+| 3 | Play, Daily challenge, Leaderboard, Profile | Next |
 | 4 | Collections, sharing, Versus | Planned |
 | 5 | Pro plan and payments, settings, legal pages | Planned |
 
@@ -32,9 +32,12 @@ In development, coins are unlimited. In production each AI search costs 20 coins
 | `DATABASE_URL` | Everything | Your PostgreSQL connection string |
 | `SESSION_SECRET` | Production | Any long random string (`openssl rand -hex 32`) |
 | `OPENAI_API_KEY` | AI features | https://platform.openai.com/api-keys |
-| `OPENAI_VISION_MODEL` | Optional | Model for photo analysis. Default `gpt-5.4` |
+| `OPENAI_VISION_MODEL` | Optional | Model for analysis, Discover and Compare. Default `gpt-5.4` |
+| `OPENAI_PROFILE_MODEL` | Optional | Cheaper model for the visual signature. Default `gpt-4o-mini` |
 
 Without `OPENAI_API_KEY` the site still runs, and AI features show a clear error.
+
+Discover and the location photos also use free public services, with no key needed: OpenStreetMap Nominatim and Photon for map positions, and Wikipedia and Wikimedia Commons for photos.
 
 ## Commands
 
