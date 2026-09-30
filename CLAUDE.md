@@ -12,4 +12,5 @@ A rebuild of the "Where Is This?" app from the Replit project (repo `hillelavni1
 - Discover photos are only sent to Pro members; others get `photoLocked`.
 - After an identified analysis, `after()` stores a visual profile in `image_features`; `/api/visual/[id]` compares it with the same user's other photos.
 - Keep the visual design in `app/globals.css` (dark navy + cyan, glass surfaces). The app is dark-only.
+- Schema changes: edit `lib/db/schema.ts`, run `npm run db:generate`, commit the new file in `drizzle/`. `npm run build` applies migrations.
 - Run `npm run typecheck` and `npm run build`, and check changes in the running app.

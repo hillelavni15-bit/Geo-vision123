@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
 const COOKIE = "wit_guest";
@@ -8,8 +8,13 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
 function secret(): string {
   const value = process.env.SESSION_SECRET;
   if (value) return value;
+  // Without SESSION_SECRET, derive a key from the database URL, which is already a
+  // private credential. Changing either one signs everyone out as new guests.
+  if (process.env.DATABASE_URL) {
+    return createHash("sha256").update(`wit-session:${process.env.DATABASE_URL}`).digest("base64url");
+  }
   if (process.env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET must be set in production.");
+    throw new Error("Set SESSION_SECRET or DATABASE_URL.");
   }
   return "dev-only-insecure-session-secret";
 }

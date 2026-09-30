@@ -19,7 +19,7 @@ Requires Node.js 20.9 or newer and PostgreSQL.
 ```bash
 npm install
 cp .env.example .env     # then fill in the values
-npm run db:push          # create the database tables
+npm run db:migrate       # create the database tables
 npm run dev              # http://localhost:3000
 ```
 
@@ -30,7 +30,7 @@ In development, coins are unlimited. In production each AI search costs 20 coins
 | Setting | Needed for | Where to get it |
 |---|---|---|
 | `DATABASE_URL` | Everything | Your PostgreSQL connection string |
-| `SESSION_SECRET` | Production | Any long random string (`openssl rand -hex 32`) |
+| `SESSION_SECRET` | Optional | Long random string that signs guest cookies. If empty, a key is derived from `DATABASE_URL` |
 | `OPENAI_API_KEY` | AI features | https://platform.openai.com/api-keys |
 | `OPENAI_VISION_MODEL` | Optional | Model for analysis, Discover and Compare. Default `gpt-5.4` |
 | `OPENAI_PROFILE_MODEL` | Optional | Cheaper model for the visual signature. Default `gpt-4o-mini` |
@@ -44,14 +44,20 @@ Discover and the location photos also use free public services, with no key need
 | Command | What it does |
 |---|---|
 | `npm run dev` | Development server |
-| `npm run build` | Production build |
+| `npm run build` | Apply database migrations, then build for production |
 | `npm start` | Run the production build |
 | `npm run typecheck` | TypeScript check |
-| `npm run db:push` | Apply the database schema in `lib/db/schema.ts` |
+| `npm run db:migrate` | Apply database migrations from `drizzle/` |
+| `npm run db:generate` | Create a new migration after changing `lib/db/schema.ts` |
 
 ## Deploy
 
-Works on Vercel or any Node host. Set `DATABASE_URL`, `SESSION_SECRET` and `OPENAI_API_KEY`, and run `npm run db:push` against the production database once.
+Works on Vercel or any Node host:
+
+1. Import the repository into Vercel.
+2. Add a PostgreSQL database (on Vercel: Storage → Neon), which sets `DATABASE_URL`.
+3. Add `OPENAI_API_KEY` under Environment Variables.
+4. Deploy. The build applies database migrations automatically.
 
 ## Layout
 
