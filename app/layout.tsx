@@ -1,22 +1,35 @@
 import type { Metadata, Viewport } from "next";
+import { Toaster } from "sonner";
+import { MeProvider } from "@/components/me-provider";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Geo-Vision · איתור מיקומים",
-  description: "זיהוי מיקום מתמונה עם AI, חילוץ GPS מתמונות, חיפוש מקומות ומשחק ניחוש מיקומים",
+  title: "Where Is This?",
+  description: "Identify locations from photos and test your geography skills.",
+  openGraph: {
+    title: "Where Is This?",
+    description: "Identify locations from photos and test your geography skills.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#6d5dfc",
+  themeColor: "#0d131b",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="he" dir="rtl">
-      <body>{children}</body>
+    <html lang="en">
+      <body>
+        <MeProvider>
+          {children}
+          <Toaster theme="dark" position="bottom-right" richColors />
+        </MeProvider>
+      </body>
     </html>
   );
 }

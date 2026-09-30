@@ -1,61 +1,62 @@
-# Geo-Vision · איתור מיקומים
+# Where Is This?
 
-אפליקציית ווב (Next.js + TypeScript) עם ארבעה כלים לאיתור מיקומים:
+Upload a photo and the AI works out where in the world it was taken. It shows the evidence behind its answer, and it says "Location Unknown" instead of guessing when the photo has no clear clues.
 
-| לשונית | מה היא עושה | איפה זה רץ |
+This is a new implementation of the app, built with Next.js, PostgreSQL and the OpenAI API. It is being built in stages:
+
+| Stage | What | Status |
 |---|---|---|
-| 🤖 **זיהוי AI** | מעלים תמונה ו-Claude מנתח רמזים ויזואליים (שלטים, שפה, אדריכלות, צמחייה, כבישים) ומנחש איפה היא צולמה. מוצגים ניחוש, רדיוס אי-ודאות, רמזים והסבר. אם לתמונה יש GPS, מוצג גם המרחק מהמיקום האמיתי. | שרת (`/api/locate`) |
-| 🛰️ **GPS מתמונה** | קורא נתוני EXIF (מיקום, גובה, תאריך צילום ומצלמה) מתמונה אחת או יותר, מציג אותן על המפה ומאתר כתובת. | בדפדפן בלבד. התמונות לא נשלחות לשום מקום |
-| 🔎 **חיפוש מקומות** | חיפוש כתובת או מקום, ״המיקום שלי״, ולחיצה על המפה כדי לראות מה נמצא בנקודה. | בדפדפן (OpenStreetMap Nominatim) |
-| 🎯 **משחק ניחוש** | חמישה סיבובים בסגנון GeoGuessr עם אתרים מפורסמים מוויקיפדיה, או עם התמונות שלכם שיש בהן GPS. עד 5,000 נקודות לסיבוב. | בדפדפן |
+| 1 | Design, navigation, Identify Photo, history, coins | Done |
+| 2 | Discover Places, Compare | Next |
+| 3 | Play, Daily challenge, Leaderboard, Profile | Planned |
+| 4 | Collections, sharing, Versus | Planned |
+| 5 | Pro plan and payments, settings, legal pages | Planned |
 
-## הרצה מקומית
+## Run locally
 
-דרוש Node.js 20 ומעלה.
+Requires Node.js 20.9 or newer and PostgreSQL.
 
 ```bash
 npm install
-cp .env.example .env.local   # והדביקו מפתח ANTHROPIC_API_KEY (דרוש רק ללשונית זיהוי AI)
-npm run dev                  # http://localhost:3000
+cp .env.example .env     # then fill in the values
+npm run db:push          # create the database tables
+npm run dev              # http://localhost:3000
 ```
 
-מפתח API מקבלים ב-https://console.anthropic.com/. שאר הלשוניות עובדות גם בלי מפתח.
+In development, coins are unlimited. In production each AI search costs 20 coins, new visitors start with 100, and coins are charged only when a search succeeds.
 
-## פקודות
+## Settings (`.env`)
 
-```bash
-npm run dev     # שרת פיתוח
-npm run build   # בנייה לפרודקשן
-npm start       # הרצת הבנייה
-npm test        # בדיקות יחידה (Vitest)
-npm run lint    # בדיקת טיפוסים (TypeScript)
+| Setting | Needed for | Where to get it |
+|---|---|---|
+| `DATABASE_URL` | Everything | Your PostgreSQL connection string |
+| `SESSION_SECRET` | Production | Any long random string (`openssl rand -hex 32`) |
+| `OPENAI_API_KEY` | AI features | https://platform.openai.com/api-keys |
+| `OPENAI_VISION_MODEL` | Optional | Model for photo analysis. Default `gpt-5.4` |
+
+Without `OPENAI_API_KEY` the site still runs, and AI features show a clear error.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm start` | Run the production build |
+| `npm run typecheck` | TypeScript check |
+| `npm run db:push` | Apply the database schema in `lib/db/schema.ts` |
+
+## Deploy
+
+Works on Vercel or any Node host. Set `DATABASE_URL`, `SESSION_SECRET` and `OPENAI_API_KEY`, and run `npm run db:push` against the production database once.
+
+## Layout
+
 ```
-
-## העלאה לאוויר (Vercel)
-
-1. מייבאים את הריפו ב-https://vercel.com/new.
-2. ב-Environment Variables מוסיפים `ANTHROPIC_API_KEY`.
-3. Deploy.
-
-## מבנה הפרויקט
-
+app/                  Pages and API routes (app/api/*)
+components/           UI: site shell, home page modes, map, primitives in components/ui
+lib/db/               Drizzle schema and database client
+lib/server/           Server-only logic: guest cookie, coins, OpenAI, photo analysis
+lib/client/           Browser-only helpers: image preparation
+lib/types.ts          Types shared by client and server
 ```
-app/
-  page.tsx              מסך ראשי עם הלשוניות
-  api/locate/route.ts   נקודת קצה בשרת: שולחת תמונה ל-Claude ומחזירה ניחוש מיקום (JSON)
-components/             הלשוניות, מפה (Leaflet) ובחירת תמונה
-lib/
-  geo.ts                מרחקים (haversine) ועיצוב קואורדינטות
-  exif.ts               קריאת GPS ממטא-דאטה של תמונה (exifr)
-  places.ts             חיפוש וכתובת הפוכה (Nominatim)
-  image.ts              הקטנת תמונה בדפדפן לפני שליחה ל-AI (מסירה גם את ה-EXIF)
-  game.ts               לוגיקת המשחק, ניקוד ורשימת אתרים
-  locate.ts             סכמת התשובה של ה-AI ואימות שלה
-tests/                  בדיקות יחידה
-```
-
-## הערות
-
-- **AI**: המודל הוא `claude-opus-5` עם פלט מובנה (JSON Schema). אם המודל מסרב לבקשה, ה-API מנסה אוטומטית שוב עם מודל חלופי (`fallbacks: "default"`).
-- **פרטיות**: בלשונית ה-AI התמונה מוקטנת ומקודדת מחדש בדפדפן, כך שנתוני ה-GPS לא נשלחים למודל.
-- **Nominatim** מגביל לבקשה אחת בשנייה. לשימוש בהיקף גדול צריך שירות גיאוקודינג אחר.
