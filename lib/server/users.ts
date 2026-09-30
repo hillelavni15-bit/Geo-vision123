@@ -3,8 +3,8 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import type { Me } from "@/lib/types";
 
-/** Development is unlimited so the app can be tried without managing coins. */
-export const UNLIMITED_COINS = process.env.NODE_ENV !== "production";
+/** Unlimited in development, or when UNLIMITED_COINS=true (useful while testing a deployment). */
+export const UNLIMITED_COINS = process.env.NODE_ENV !== "production" || process.env.UNLIMITED_COINS === "true";
 
 export async function ensureUser(id: string) {
   await db.insert(schema.users).values({ id }).onConflictDoNothing();

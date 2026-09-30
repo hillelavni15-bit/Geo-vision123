@@ -32,6 +32,7 @@ In development, coins are unlimited. In production each AI search costs 20 coins
 | `DATABASE_URL` | Everything | Your PostgreSQL connection string |
 | `SESSION_SECRET` | Optional | Long random string that signs guest cookies. If empty, a key is derived from `DATABASE_URL` |
 | `OPENAI_API_KEY` | AI features | https://platform.openai.com/api-keys |
+| `UNLIMITED_COINS` | Optional | `true` gives everyone unlimited coins, for testing a deployment |
 | `OPENAI_VISION_MODEL` | Optional | Model for analysis, Discover and Compare. Default `gpt-5.4` |
 | `OPENAI_PROFILE_MODEL` | Optional | Cheaper model for the visual signature. Default `gpt-4o-mini` |
 
