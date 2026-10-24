@@ -1,0 +1,152 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap");
+@import "tailwindcss";
+
+/* Deep navy surfaces with a bright cyan accent. The app is dark-only by design. */
+@theme {
+  --color-background: hsl(215 35% 8%);
+  --color-foreground: hsl(210 40% 98%);
+  --color-border: hsl(215 35% 15%);
+  --color-input: hsl(215 35% 18%);
+  --color-ring: hsl(180 100% 40%);
+
+  --color-card: hsl(215 35% 10%);
+  --color-card-border: hsl(215 35% 18%);
+
+  --color-primary: hsl(180 100% 40%);
+  --color-primary-foreground: hsl(215 35% 8%);
+  --color-secondary: hsl(190 40% 18%);
+  --color-secondary-foreground: hsl(180 100% 80%);
+  --color-muted: hsl(215 35% 14%);
+  --color-muted-foreground: hsl(215 20% 65%);
+  --color-destructive: hsl(0 84% 60%);
+
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, Menlo, monospace;
+
+  --animate-spin-very-slow: spin 18s linear infinite;
+  --animate-spin-reverse-slow: spin-reverse 25s linear infinite;
+  --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
+  --animate-float-pin: float-pin 3s ease-in-out infinite;
+  --animate-orbit: spin 12s linear infinite;
+  --animate-drift: drift 14s ease-in-out infinite;
+  --animate-gradient-x: gradient-x 5s ease infinite;
+  --animate-fade-up: fade-up 0.5s ease-out both;
+
+  @keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.04); }
+  }
+  @keyframes float-pin {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(-6px); opacity: 0.85; }
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -24px) scale(1.08); }
+  }
+  @keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    color-scheme: dark;
+  }
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+    background-image:
+      radial-gradient(ellipse 70% 55% at 78% 8%, hsl(180 100% 42% / 0.13), transparent 60%),
+      radial-gradient(ellipse 65% 50% at 8% 95%, hsl(195 90% 48% / 0.1), transparent 55%),
+      radial-gradient(ellipse 100% 80% at 50% -10%, hsl(210 60% 20% / 0.35), transparent 70%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: hsl(180 100% 40% / 0.3);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+@utility glass-panel {
+  background: linear-gradient(180deg, hsl(215 35% 11% / 0.72), hsl(215 35% 8% / 0.62));
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-color: hsl(180 100% 60% / 0.08);
+}
+
+@utility glass-card {
+  background: linear-gradient(160deg, hsl(215 35% 13% / 0.68), hsl(215 35% 9% / 0.55));
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid hsl(180 100% 60% / 0.1);
+  box-shadow: 0 1px 0 0 hsl(0 0% 100% / 0.03) inset, 0 10px 40px -16px hsl(0 0% 0% / 0.6);
+}
+
+@utility glow-primary {
+  box-shadow:
+    0 0 0 1px hsl(180 100% 50% / 0.25),
+    0 6px 24px -6px hsl(180 100% 45% / 0.45),
+    0 0 40px -10px hsl(180 100% 50% / 0.3);
+}
+
+@utility glow-soft {
+  box-shadow: 0 8px 32px -12px hsl(180 100% 45% / 0.25);
+}
+
+@utility text-gradient {
+  background: linear-gradient(120deg, hsl(180 100% 60%), hsl(190 95% 55%) 40%, hsl(200 90% 65%));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(0 200 200 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(0 200 200 / 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Leaflet popups on the dark theme */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: #0a0e17;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: hsl(215 35% 12%);
+  color: var(--color-foreground);
+  border: 1px solid hsl(180 100% 60% / 0.15);
+}
